@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+instance/
+static/recordings/*.mp4
+static/uploads/*
+!static/uploads/.gitkeep
+serviceAccountKey.json
+# Ignore only sensitive data, but include the core app

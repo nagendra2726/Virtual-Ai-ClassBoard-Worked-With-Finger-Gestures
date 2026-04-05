@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing | AirWrite AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .pricing-section {
+            padding: 100px 0;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent);
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .pricing-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, var(--accent));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+        }
+
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px 32px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-card:hover {
+            transform: translateY(-15px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .price-card.popular {
+            border: 1px solid var(--accent);
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.1), transparent);
+        }
+
+        .price-card.popular::before {
+            content: "BEST VALUE";
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: var(--accent);
+            color: white;
+            padding: 8px 40px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            transform: rotate(45deg);
+            letter-spacing: 1px;
+        }
+
+        .price-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+
+        .price-tag {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+        }
+
+        .price-tag span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-left: 5px;
+        }
+
+        .price-features {
+            list-style: none;
+            padding: 0;
+            margin: 32px 0;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .price-features li {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .price-features li i {
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        .sub-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sub-btn:hover {
+            filter: brightness(1.15);
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Notification Toast */
+        #payment-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 32px;
+            background: var(--accent);
+            color: white;
+            border-radius: 12px;
+            transform: translateY(150%);
+            transition: 0.5s;
+            z-index: 10000;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #payment-toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body class="bg-dark">
+    <header class="header neon-border-bottom">
+        <div class="logo">
+            <span class="logo-text">AirWrite</span>
+        </div>
+        <div class="menu-toggle" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/pricing">Plans</a></li>
+                <li><a href="/whiteboard" class="nav-write-btn"><i class="fas fa-pencil-alt"></i> Write</a></li>
+                <li><a href="/profile">Profile</a></li>
+                <li><a href="/logout" class="nav-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('nav-menu');
+            menu.classList.toggle('active');
+            const icon = document.querySelector('.menu-toggle i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        }
+    </script>
+
+    <div class="pricing-section">
+        <div class="pricing-header animate-fade-in">
+            <h1>Choose Your Pro Experience</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; font-size: 1.1rem;">Unlock powerful AI tools, infinite storage, and 4K recording with an AirWrite Pro membership.</p>
+        </div>
+
+        <div class="pricing-container">
+            <!-- Monthly -->
+            <div class="price-card">
+                <h3>Monthly</h3>
+                <div class="price-tag">₹99<span>/mo</span></div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> Basic AI Shapes</li>
+                    <li><i class="fas fa-check"></i> 5GB Cloud Storage</li>
+                    <li><i class="fas fa-check"></i> Standard Exports</li>
+                </ul>
+                <button class="sub-btn" onclick="subscribe('monthly', 99)">Subscribe</button>
+            </div>
+
+            <!-- Quarterly -->
+            <div class="price-card">
+                <h3>Quarterly</h3>
+                <div class="price-tag">₹249<span>/3mo</span></div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> 15GB Cloud space</li>
+                    <li><i class="fas fa-check"></i> Priority Support</li>
+                    <li><i class="fas fa-check"></i> Custom Fonts</li>
+                </ul>
+                <button class="sub-btn" onclick="subscribe('quarterly', 249)">Subscribe</button>
+            </div>
+
+            <!-- Semiannual -->
+            <div class="price-card">
+                <h3>Semiannual</h3>
+                <div class="price-tag">₹449<span>/6mo</span></div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> 30GB Cloud space</li>
+                    <li><i class="fas fa-check"></i> AI Text Reader</li>
+                    <li><i class="fas fa-check"></i> Multi-User Support</li>
+                </ul>
+                <button class="sub-btn" onclick="subscribe('semiannual', 449)">Subscribe</button>
+            </div>
+
+            <!-- Annual -->
+            <div class="price-card popular">
+                <h3>Annual Pro</h3>
+                <div class="price-tag">₹799<span>/year</span></div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> 100GB Cloud Storage</li>
+                    <li><i class="fas fa-check"></i> 4K Recording Export</li>
+                    <li><i class="fas fa-check"></i> Advanced Shapes</li>
+                </ul>
+                <button class="sub-btn" onclick="subscribe('annual', 799)">Choose Pro</button>
+            </div>
+
+            <!-- 6-Year -->
+            <div class="price-card">
+                <h3>6-Year Spec</h3>
+                <div class="price-tag">₹2,999<span>/6yr</span></div>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> 1TB Priority Cloud</li>
+                    <li><i class="fas fa-check"></i> Early AI Access</li>
+                    <li><i class="fas fa-check"></i> Personal Account Manager</li>
+                </ul>
+                <button class="sub-btn" onclick="subscribe('sixyear', 2999)">Get Lifetime Access</button>
+            </div>
+        </div>
+
+        <!-- NEW: 7-Day Free Trial Section -->
+        <div style="max-width: 900px; margin: 80px auto 0; padding: 40px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border-radius: 32px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(25px); text-align: center;">
+            <div style="font-size: 3rem; color: var(--accent); margin-bottom: 20px;"><i class="fas fa-gift"></i></div>
+            <h2 style="font-family: 'Source Serif 4', serif; font-weight: 800; font-size: 2.2rem; color: white; margin-bottom: 12px;">Start Your 7-Day Free Trial</h2>
+            <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Experience the full power of AirWrite AI for free. Get unlimited cloud boards, AI recognition, and HD exports for 7 days. No credit card required to start.
+            </p>
+            <button id="activate-trial-btn" class="sub-btn" style="width: auto; background: var(--accent); padding: 16px 40px; font-size: 1.1rem; border-radius: 16px;" onclick="activateTrial()">
+                Claim 7-Day Free Access
+            </button>
+        </div>
+
+        <div style="margin-top: 80px; padding: 40px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 24px; text-align: center;">
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Experiencing issues with the automated checkout? Use our direct portal:</p>
+            <a href="https://razorpay.me/@chellunagendravaraprasad" target="_blank" class="glass-btn" style="padding: 12px 30px; font-size: 0.9rem; border-color: var(--accent); color: var(--accent);"><i class="fas fa-external-link-alt"></i> Pay via Direct Portal</a>
+        </div>
+    </div>
+
+    <div id="payment-toast"></div>
+
+    <!-- Firebase & Auth Logic -->
+    <script type="module">
+        import { auth } from '/static/js/firebase_config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
+        window.showToast = (msg) => {
+            const toast = document.getElementById('payment-toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        };
+
+        window.subscribe = async (plan, amount) => {
+            if (!currentUser) {
+                showToast("Please login first!");
+                setTimeout(() => location.href = '/login', 1500);
+                return;
+            }
+
+            try {
+                showToast("Initializing secure checkout...");
+                
+                // Create Razorpay Order
+                const resp = await fetch('/api/create_order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        plan: plan,
+                        amount: amount 
+                    })
+                });
+                
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({ error: "Unknown Server Error" }));
+                    console.error("API Error Body:", errData);
+                    throw new Error(errData.error || `Server Error ${resp.status}`);
+                }
+
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error);
+
+                const options = {
+                    key: "rzp_test_SZrAXFzXFe6Vk2",
+                    amount: data.order.amount,
+                    currency: "INR",
+                    name: "AirWrite AI Pro",
+                    description: `${plan.toUpperCase()} Membership`,
+                    order_id: data.order.id,
+                    handler: async function (response) {
+                        showToast("Verifying payment...");
+                        
+                        const vResp = await fetch('/api/verify_payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                ...response,
+                                uid: currentUser.uid,
+                                email: currentUser.email,
+                                plan: plan,
+                                amount: amount
+                            })
+                        });
+
+                        const vData = await vResp.json();
+                        if (vData.success) {
+                            showToast("Membership activated! Redirecting...");
+                            setTimeout(() => location.href = '/dashboard', 2000);
+                        } else {
+                            showToast("Verification failed. Please contact support.");
+                        }
+                    },
+                    prefill: { email: currentUser.email },
+                    theme: { color: "#6366f1" }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
+            } catch (err) {
+                console.error(err);
+                showToast("Error: " + err.message);
+            }
+        };
+
+        window.activateTrial = async () => {
+            if (!currentUser) {
+                showToast("Please login first to claim your free trial.");
+                setTimeout(() => location.href = '/login', 1500);
+                return;
+            }
+            
+            const btn = document.getElementById('activate-trial-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Activating Gateway...";
+            btn.disabled = true;
+
+            try {
+                showToast("Activating your 7-Day Pro trial...");
+                const response = await fetch('/api/free_trial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUser.uid })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast("Success! Launching Whiteboard Studio...");
+                    setTimeout(() => window.location.href = '/whiteboard', 1500);
+                } else {
+                    showToast(result.error || "Trial activation failed.");
+                }
+            } catch (err) {
+                console.error("Trial Activation Error:", err);
+                showToast("An error occurred during activation. Check connection.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+</html>

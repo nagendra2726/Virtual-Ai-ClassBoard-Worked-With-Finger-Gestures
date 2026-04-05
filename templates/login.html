@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | AirWrite AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent);
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 50px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .auth-header { margin-bottom: 40px; }
+        .auth-header .logo { justify-content: center; margin-bottom: 12px; }
+        .auth-header h2 { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; margin-bottom: 8px; }
+        .auth-header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 30px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .auth-tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            margin-left: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: white;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .auth-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .social-login {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .social-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+        }
+
+        .social-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .social-btn i { color: #DB4437; font-size: 1.2rem; }
+
+        #error-msg {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            background: rgba(244, 63, 94, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    <div class="auth-container">
+        <div class="auth-card animate-fade-in">
+            <div class="auth-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-brain" style="color: var(--accent);"></i></div>
+                    <div class="logo-text">AIRWRITE AI</div>
+                </div>
+                <h2 id="auth-title">Welcome Back</h2>
+                <p id="auth-subtitle">Sign in to access your creative dashboard</p>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchTab('signin')">Sign In</div>
+                <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+            </div>
+
+            <div id="error-msg"></div>
+
+            <form id="auth-form">
+                <div class="form-group" id="name-group" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn" id="submit-btn">Sign In</button>
+            </form>
+
+            <div class="social-login">
+                <button class="social-btn" id="google-btn">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { auth } from '/static/js/firebase_config.js';
+        import { 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        let mode = 'signin';
+
+        window.switchTab = (newMode) => {
+            mode = newMode;
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.auth-tab[onclick*="${newMode}"]`).classList.add('active');
+            
+            document.getElementById('auth-title').innerText = mode === 'signin' ? 'Welcome Back' : 'Create Account';
+            document.getElementById('auth-subtitle').innerText = mode === 'signin' ? 'Sign in to access your creative dashboard' : 'Join AirWrite AI and start creating';
+            document.getElementById('submit-btn').innerText = mode === 'signin' ? 'Sign In' : 'Sign Up';
+            document.getElementById('name-group').style.display = mode === 'signin' ? 'none' : 'block';
+        };
+
+        const showError = (msg) => {
+            const errDiv = document.getElementById('error-msg');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+            setTimeout(() => { errDiv.style.display = 'none'; }, 5000);
+        };
+
+        document.getElementById('auth-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+
+            try {
+                if (mode === 'signin') {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(res.user, { displayName: name });
+                }
+                location.href = '/dashboard';
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('google-btn').onclick = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                location.href = '/dashboard';
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        // If already logged in, go to dashboard
+        auth.onAuthStateChanged(user => {
+            if (user) location.href = '/dashboard';
+        });
+    </script>
+</body>
+</html>

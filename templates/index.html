@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gesture Whiteboard - Real-time Collaboration</title>
+    <!-- Google Fonts: Inter and Orbitron for AI theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas & UI Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Authentication Guard -->
+    <script type="module">
+        import { auth, db } from '/static/js/firebase_config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Strict Subscription Check (Production Guard)
+            try {
+                const subRef = doc(db, "subscriptions", user.uid);
+                const subSnap = await getDoc(subRef);
+                if (!subSnap.exists() || subSnap.data().status !== 'active') {
+                    // No active plan found - Redirect to plans
+                    window.location.href = '/pricing';
+                }
+            } catch (err) {
+                console.error("Access Control Error:", err);
+                window.location.href = '/pricing';
+            }
+        });
+    </script>
+    <style>
+        .main-container {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 85px);
+            margin-top: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    <!-- Navigation / Header -->
+    <header class="header neon-border-bottom">
+        <div class="logo">
+            <span class="logo-text">AirWrite</span>
+        </div>
+        <div class="menu-toggle" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/pricing">Plans</a></li>
+                <li><a href="/whiteboard" class="nav-write-btn"><i class="fas fa-pencil-alt"></i> Write</a></li>
+                <li><a href="/profile">Profile</a></li>
+                <li><button id="record-btn" class="glass-btn"><i class="fas fa-video"></i> Record</button></li>
+                <li><button id="export-btn" class="glass-btn"><i class="fas fa-download"></i> Export</button></li>
+                <li><a href="/logout" class="nav-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('nav-menu');
+            menu.classList.toggle('active');
+            const icon = document.querySelector('.menu-toggle i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        }
+    </script>
+
+    <main class="main-container">
+        <!-- Floating Tools Toolbar -->
+        <div class="toolbar glass-panel animate-slide-in">
+            <div class="tool-group">
+                <button class="tool-btn active" id="pencil" title="Pencil"><i class="fas fa-pencil-alt"></i></button>
+                <button class="tool-btn" id="pen" title="Pen"><i class="fas fa-pen-nib"></i></button>
+                <button class="tool-btn" id="marker" title="Marker"><i class="fas fa-marker"></i></button>
+                <button class="tool-btn" id="laser" title="Laser Pointer"><i class="fas fa-bolt"></i></button>
+                <button class="tool-btn" id="eraser" title="Eraser"><i class="fas fa-eraser"></i></button>
+            </div>
+            <div class="divider"></div>
+            <div class="tool-group">
+                <button class="tool-btn" id="shapes-trigger" title="Shapes Library" style="width: auto; padding: 0 12px; gap: 8px;">
+                    <i class="fas fa-shapes"></i> <span style="font-size: 0.85rem; font-weight: 600;">Shapes</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+            </div>
+            
+            <!-- Shapes Library Overlay Panel -->
+            <div class="shapes-library-panel" id="shapes-panel">
+                <div class="shapes-category">
+                    <h4>Basic Shapes</h4>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="rect" title="Rectangle"><i class="far fa-square"></i></div>
+                        <div class="shape-item" data-shape="circle" title="Circle"><i class="far fa-circle"></i></div>
+                        <div class="shape-item" data-shape="triangle" title="Triangle"><i class="fas fa-play" style="transform: rotate(-90deg);"></i></div>
+                        <div class="shape-item" data-shape="diamond" title="Diamond"><i class="fas fa-gem"></i></div>
+                        <div class="shape-item" data-shape="pentagon" title="Pentagon">⬠</div>
+                        <div class="shape-item" data-shape="hexagon" title="Hexagon">⬢</div>
+                        <div class="shape-item" data-shape="star" title="Star"><i class="far fa-star"></i></div>
+                        <div class="shape-item" data-shape="heart" title="Heart"><i class="far fa-heart"></i></div>
+                        <div class="shape-item" data-shape="cloud" title="Cloud"><i class="fas fa-cloud"></i></div>
+                    </div>
+                </div>
+
+                <div class="shapes-category">
+                    <h4>Figured Arrows</h4>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="arrow-right" title="Right Arrow"><i class="fas fa-long-arrow-alt-right"></i></div>
+                        <div class="shape-item" data-shape="arrow-left" title="Left Arrow"><i class="fas fa-long-arrow-alt-left"></i></div>
+                        <div class="shape-item" data-shape="arrow-up" title="Up Arrow"><i class="fas fa-long-arrow-alt-up"></i></div>
+                        <div class="shape-item" data-shape="arrow-down" title="Down Arrow"><i class="fas fa-long-arrow-alt-down"></i></div>
+                    </div>
+                </div>
+
+                <div class="shapes-category">
+                    <h4>Equations & Math</h4>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="plus" title="Plus"><i class="fas fa-plus"></i></div>
+                        <div class="shape-item" data-shape="minus" title="Minus"><i class="fas fa-minus"></i></div>
+                        <div class="shape-item" data-shape="multiply" title="Multiply"><i class="fas fa-times"></i></div>
+                        <div class="shape-item" data-shape="divide" title="Divide"><i class="fas fa-divide"></i></div>
+                    </div>
+                </div>
+
+                <div class="shapes-category">
+                    <h4>Lines</h4>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="line" title="Line">/</div>
+                        <div class="shape-item" data-shape="line-arrow" title="Line Arrow">↗</div>
+                    </div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="tool-group">
+                <input type="color" id="color-picker" value="#00d2ff">
+                <div class="brush-slider-container">
+                    <input type="range" id="brush-size" min="1" max="50" step="0.5" value="2.5">
+                    <span id="brush-val">2.5</span>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="tool-group">
+                <button class="tool-btn" id="undo" title="Undo"><i class="fas fa-undo"></i></button>
+                <button class="tool-btn" id="redo" title="Redo"><i class="fas fa-redo"></i></button>
+                <button class="tool-btn" id="clear-board" title="Clear Board"><i class="fas fa-trash-alt"></i></button>
+            </div>
+            <div class="divider"></div>
+            <div class="tool-group">
+                <button class="tool-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                <button class="tool-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                <button class="tool-btn" id="fullscreen" title="Fullscreen"><i class="fas fa-expand"></i></button>
+                <button class="tool-btn" id="import-image-btn" title="Import Image"><i class="fas fa-file-image"></i></button>
+                <input type="file" id="image-loader" accept="image/*" style="display:none;">
+            </div>
+        </div>
+
+        <!-- Notification Center -->
+        <div id="notification-container"></div>
+
+        <!-- Dashboard Stats Overlays (Optional togglable) -->
+        <div class="stats-panel glass-panel" id="stats-panel" style="display:none;">
+            <h3>Live Session Stats</h3>
+            <canvas id="session-chart"></canvas>
+        </div>
+
+        <!-- Whiteboard Surface -->
+        <div class="whiteboard-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; background: #ffffff;">
+            <canvas id="bg-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+            <canvas id="whiteboard" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+            <canvas id="overlay-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+            <!-- Cursor representing hand tracking -->
+            <div id="gesture-cursor" class="hand-cursor" style="z-index: 100;"></div>
+        </div>
+
+        <!-- Webcam Feed Container -->
+        <div class="webcam-container glass-panel animate-fade-in">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
+            <div class="gesture-status glass-panel">
+                <span id="gesture-name">No Gesture Detected</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Project Scripts -->
+    <script type="module" src="{{ url_for('static', filename='js/whiteboard.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/gestures.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
