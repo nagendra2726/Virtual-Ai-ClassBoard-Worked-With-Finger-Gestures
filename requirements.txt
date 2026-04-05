@@ -5,9 +5,6 @@ gunicorn
 razorpay
 firebase-admin
 python-dotenv
-mediapipe
-opencv-python
-numpy
 requests
 mimetypes-utils
 urllib3<2.0.0
