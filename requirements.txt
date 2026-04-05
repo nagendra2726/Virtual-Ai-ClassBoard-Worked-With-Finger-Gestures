@@ -6,7 +6,6 @@ razorpay
 firebase-admin
 python-dotenv
 requests
-mimetypes-utils
 urllib3<2.0.0
 google-auth
 google-cloud-firestore
